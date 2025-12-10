@@ -4,27 +4,27 @@ import {
   Trash2,
   PanelLeftClose,
   PanelLeftOpen,
-} from "lucide-react";
-import { useChatStore } from "@/store/chat-store";
-import { useUiStore } from "@/store/ui-store";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { useHotkeys } from "react-hotkeys-hook";
-import { Kbd } from "@/components/ui/kbd";
-import { usePlatform } from "@/hooks/use-platform";
+} from 'lucide-react';
+import { useChatStore } from '@/store/chat-store';
+import { useUiStore } from '@/store/ui-store';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { useHotkeys } from 'react-hotkeys-hook';
+import { Kbd } from '@/components/ui/kbd';
+import { usePlatform } from '@/hooks/use-platform';
 
 export function Sidebar() {
   const { chats, activeChatId, createChat, selectChat, deleteChat } =
     useChatStore();
   const { isSidebarCollapsed, toggleSidebar } = useUiStore();
   const platform = usePlatform();
-  const isMac = platform === "macos";
+  const isMac = platform === 'macos';
 
-  useHotkeys("mod+backslash", () => toggleSidebar(), {
+  useHotkeys('mod+backslash', () => toggleSidebar(), {
     preventDefault: true,
     keydown: true,
   });
-  useHotkeys("mod+shift+o", () => createChat(), {
+  useHotkeys('mod+shift+o', () => createChat(), {
     preventDefault: true,
     keydown: true,
   });
@@ -32,25 +32,25 @@ export function Sidebar() {
   return (
     <div
       className={cn(
-        "bg-sidebar text-sidebar-foreground",
-        "fixed inset-y-0 left-0 z-50 h-full max-w-full w-60 md:w-64 border-r md:relative",
+        'bg-sidebar text-sidebar-foreground',
+        'fixed inset-y-0 left-0 z-50 h-full w-60 max-w-full border-r md:relative md:w-64',
         isSidebarCollapsed
-          ? "-translate-x-full max-w-min w-auto md:translate-x-0"
-          : "translate-x-0",
-        "flex flex-col gap-1 p-1",
+          ? 'w-auto max-w-min -translate-x-full md:translate-x-0'
+          : 'translate-x-0',
+        'flex flex-col gap-1 p-1'
       )}
     >
-      <div className={cn("flex items-center md:justify-start justify-end")}>
+      <div className={cn('flex items-center justify-end md:justify-start')}>
         <Button
           variant="secondary"
           size="default"
           className={cn(
-            "h-10 p-0",
-            !isSidebarCollapsed && "w-full justify-between pr-2 aspect-auto",
+            'h-10 p-0',
+            !isSidebarCollapsed && 'aspect-auto w-full justify-between pr-2'
           )}
           onClick={toggleSidebar}
         >
-          <div className="h-full w-auto aspect-square flex items-center justify-center">
+          <div className="flex aspect-square h-full w-auto items-center justify-center">
             {isSidebarCollapsed ? (
               <PanelLeftOpen className="h-4 w-4" />
             ) : (
@@ -62,8 +62,8 @@ export function Sidebar() {
           {!isSidebarCollapsed && (
             <div className="hidden items-center gap-1 md:flex">
               <Kbd>
-                <span className={cn("text-xs", isMac && "font-sans")}>
-                  {isMac ? "⌘" : "Ctrl"}
+                <span className={cn('text-xs', isMac && 'font-sans')}>
+                  {isMac ? '⌘' : 'Ctrl'}
                 </span>
               </Kbd>
               <Kbd>
@@ -77,34 +77,34 @@ export function Sidebar() {
       <Button
         onClick={createChat}
         className={cn(
-          "w-full h-10 justify-start",
+          'h-10 w-full justify-start',
           isSidebarCollapsed
-            ? "w-auto aspect-square"
-            : "pl-0 py-0 pr-2 gap-0 justify-between",
+            ? 'aspect-square w-auto'
+            : 'justify-between gap-0 py-0 pr-2 pl-0'
         )}
         variant="outline"
-        size={isSidebarCollapsed ? "icon" : "default"}
+        size={isSidebarCollapsed ? 'icon' : 'default'}
       >
-        <div className="flex items-center h-full gap-2">
+        <div className="flex h-full items-center gap-2">
           <div
             className={cn(
-              "aspect-square h-full w-auto items-center flex justify-center",
+              'flex aspect-square h-full w-auto items-center justify-center'
             )}
           >
-            <Plus className={cn("h-4 w-4")} />
+            <Plus className={cn('h-4 w-4')} />
           </div>
-          {!isSidebarCollapsed && "New Chat"}
+          {!isSidebarCollapsed && 'New Chat'}
         </div>
 
         {!isSidebarCollapsed && (
-          <div className="hidden md:inline-flex gap-1">
+          <div className="hidden gap-1 md:inline-flex">
             <Kbd>
-              <span className={cn("text-xs", isMac && "font-sans")}>
-                {isMac ? "⌘" : "Ctrl"}
+              <span className={cn('text-xs', isMac && 'font-sans')}>
+                {isMac ? '⌘' : 'Ctrl'}
               </span>
             </Kbd>
             <Kbd>
-              <span className="text-xs font-sans">⇧</span>
+              <span className="font-sans text-xs">⇧</span>
             </Kbd>
             <Kbd>
               <span className="text-xs">O</span>
@@ -119,25 +119,24 @@ export function Sidebar() {
             <div
               key={chat.id}
               className={cn(
-                "group flex w-full items-center text-sm font-medium hover:bg-sidebar-accent hover:text-sidebar-accent-foreground justify-between",
+                'group flex w-full items-center justify-between text-sm font-medium hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
                 activeChatId === chat.id
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                  : "transparent",
-                isSidebarCollapsed &&
-                  "justify-center aspect-square h-auto px-0",
+                  ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                  : 'transparent',
+                isSidebarCollapsed && 'aspect-square h-auto justify-center px-0'
               )}
             >
               <button
                 onClick={() => selectChat(chat.id)}
                 className={
-                  "flex items-center overflow-hidden h-10 text-left w-full"
+                  'flex h-10 w-full items-center overflow-hidden text-left'
                 }
               >
-                <div className="h-full w-auto aspect-square flex items-center justify-center shrink-0">
-                  <MessageSquare className={cn("h-4 w-4")} />
+                <div className="flex aspect-square h-full w-auto shrink-0 items-center justify-center">
+                  <MessageSquare className={cn('h-4 w-4')} />
                 </div>
                 {!isSidebarCollapsed && (
-                  <span className="truncate flex-1 pl-2">{chat.title}</span>
+                  <span className="flex-1 truncate pl-2">{chat.title}</span>
                 )}
               </button>
               {!isSidebarCollapsed && (
@@ -146,7 +145,7 @@ export function Sidebar() {
                     e.stopPropagation();
                     deleteChat(chat.id);
                   }}
-                  className="h-full aspect-square hidden p-1 hover:bg-background group-hover:block"
+                  className="hidden aspect-square h-full p-1 group-hover:block hover:bg-background"
                 >
                   <Trash2 className="h-4 w-4 text-muted-foreground" />
                 </button>

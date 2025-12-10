@@ -1,19 +1,19 @@
-import { useState, useRef, useEffect } from "react";
-import { SendHorizontal } from "lucide-react";
-import { useChatStore } from "@/store/chat-store";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { ChatMessage } from "@/components/chat/chat-message";
+import { useState, useRef, useEffect } from 'react';
+import { SendHorizontal } from 'lucide-react';
+import { useChatStore } from '@/store/chat-store';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { ChatMessage } from '@/components/chat/chat-message';
 
 export function ChatWindow() {
   const { chats, activeChatId, addMessage } = useChatStore();
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const activeChat = chats.find((c) => c.id === activeChatId);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   useEffect(() => {
@@ -23,17 +23,17 @@ export function ChatWindow() {
   const handleSend = () => {
     if (!input.trim() || !activeChatId) return;
 
-    addMessage(activeChatId, input, "user");
-    setInput("");
+    addMessage(activeChatId, input, 'user');
+    setInput('');
 
     // Simulate bot response
     setTimeout(() => {
-      addMessage(activeChatId, "This is a simulated response.", "assistant");
+      addMessage(activeChatId, 'This is a simulated response.', 'assistant');
     }, 1000);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
@@ -57,7 +57,7 @@ export function ChatWindow() {
           <div ref={messagesEndRef} />
         </div>
       </div>
-      <div className="p-4 border-t bg-background">
+      <div className="border-t bg-background p-4">
         <div className="mx-auto max-w-2xl">
           <div className="relative flex items-end gap-2 border bg-background p-2 focus-within:ring-1 focus-within:ring-ring">
             <Textarea
