@@ -1,9 +1,11 @@
-import { createFileRoute, useLoaderData } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
 import { Sidebar } from '@/components/chat/sidebar';
 import { ChatWindow } from '@/components/chat/chat-window';
-import { useUiStore } from '@/store/ui-store';
-import { PanelLeftOpen } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import {
+  SidebarProvider,
+  SidebarInset,
+  SidebarTrigger,
+} from '@/components/ui/sidebar';
 import { getPlatform } from '@/hooks/use-platform';
 
 export const Route = createFileRoute('/')({
@@ -16,26 +18,17 @@ export const Route = createFileRoute('/')({
 });
 
 function App() {
-  const { toggleSidebar } = useUiStore();
-
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-white dark:bg-zinc-950">
+    <SidebarProvider defaultOpen={true}>
       <Sidebar />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <header className="flex shrink-0 items-center border-b p-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleSidebar}
-            className="aspect-square h-10 w-auto md:hidden"
-          >
-            <PanelLeftOpen className="h-5 w-5" />
-          </Button>
+      <SidebarInset className="flex h-screen flex-col overflow-hidden">
+        <header className="flex shrink-0 items-center border-b p-1 md:hidden">
+          <SidebarTrigger />
         </header>
         <main className="flex-1 overflow-hidden">
           <ChatWindow />
         </main>
-      </div>
-    </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

@@ -20,7 +20,7 @@ export type Chat = {
 interface ChatState {
   chats: Chat[];
   activeChatId: string | null;
-  createChat: () => void;
+  createChat: () => string;
   selectChat: (id: string) => void;
   addMessage: (
     chatId: string,
@@ -47,6 +47,7 @@ export const useChatStore = create<ChatState>()(
           chats: [newChat, ...state.chats],
           activeChatId: newChat.id,
         }));
+        return newChat.id;
       },
 
       selectChat: (id) => {

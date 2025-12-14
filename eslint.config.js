@@ -6,9 +6,20 @@ import tseslint from 'typescript-eslint';
 import reactPlugin from 'eslint-plugin-react';
 
 export default tseslint.config(
-  { ignores: ['dist', '.sst', '.vinxi', 'node_modules'] },
   {
-    extends: [js.configs.recommended, ...tseslint.configs.recommended],
+    ignores: [
+      'dist',
+      '.sst',
+      '.vinxi',
+      'node_modules',
+      '.output',
+      '.tanstack',
+      '.nitro',
+    ],
+  },
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+  {
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
       ecmaVersion: 2020,
@@ -27,6 +38,7 @@ export default tseslint.config(
       ],
       ...reactPlugin.configs.recommended.rules,
       ...reactPlugin.configs['jsx-runtime'].rules,
+      'react/no-children-prop': 'off',
     },
     settings: {
       react: {
