@@ -1,7 +1,7 @@
 import { useRef, useEffect } from 'react';
 import { useChatStore } from '@/store/chat-store';
 import { ChatMessage } from '@/components/chat/chat-message';
-import ChatInput, { ChatInputType, ChatInputProps } from './input/chat-input';
+import ChatInput, { ChatInputProps } from './input/chat-input';
 
 export function ChatWindow() {
   const { chats, activeChatId, addMessage, createChat } = useChatStore();

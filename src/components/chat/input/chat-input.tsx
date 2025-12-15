@@ -200,7 +200,7 @@ export default function ChatInput(props: ChatInputProps) {
           )}
         </Button>
 
-        <Button type="submit" ref={submitButtonRef} className="gap-2">
+        <Button ref={submitButtonRef} type="submit" className="gap-2">
           send
           {!isMobile && (
             <KbdGroup className="dark">
