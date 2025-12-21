@@ -1,44 +1,64 @@
+import { useState } from 'react';
 import {
   Sidebar as ShadcnSidebar,
   SidebarContent,
   SidebarHeader,
-  SidebarFooter,
   SidebarGroup,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarMenuAction,
   useSidebar,
 } from '@/components/ui/sidebar';
-import {
-  Plus,
-  MessageSquare,
-  Trash2,
-  PanelLeftClose,
-  PanelLeftOpen,
-} from 'lucide-react';
+import { Plus, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { useChatStore } from '@/store/chat-store';
+import {
+  useChats,
+  useCreateChat,
+  useDeleteChat,
+  useUpdateChatTitle,
+} from '@/hooks/use-chat-query';
 import { cn } from '@/lib/utils';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { Kbd, KbdGroup } from '@/components/ui/kbd';
 import { usePlatform } from '@/hooks/use-platform';
+import { SidebarChatItem } from './sidebar-item';
 
 export function Sidebar() {
-  const { chats, activeChatId, createChat, selectChat, deleteChat } =
-    useChatStore();
+  const { activeChatId, selectChat } = useChatStore();
+  const { data: chats = [] } = useChats();
+  const createChatMutation = useCreateChat();
+  const deleteChatMutation = useDeleteChat();
+  const updateChatTitleMutation = useUpdateChatTitle();
+
   const { toggleSidebar, open, isMobile } = useSidebar();
   const platform = usePlatform();
   const isMac = platform === 'macos';
 
-  // Toggle Sidebar Hotkey
-  useHotkeys('mod+backslash', () => toggleSidebar(), {
-    enableOnFormTags: true,
-    enableOnContentEditable: true,
-    preventDefault: true,
-  });
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  const handleCreateChat = async () => {
+    const newChatId = await createChatMutation.mutateAsync('New Chat');
+    selectChat(newChatId);
+  };
+
+  const handleDeleteChat = async (id: string) => {
+    await deleteChatMutation.mutateAsync(id);
+    if (activeChatId === id) {
+      selectChat(null);
+    }
+  };
+
+  const handleRename = async (id: string, newTitle: string) => {
+    if (newTitle.trim()) {
+      await updateChatTitleMutation.mutateAsync({
+        id,
+        title: newTitle.trim(),
+      });
+    }
+  };
 
   // New Chat Hotkey
-  useHotkeys('mod+shift+o', () => createChat(), {
+  useHotkeys('mod+shift+o', () => handleCreateChat(), {
     enableOnFormTags: true,
     enableOnContentEditable: true,
     preventDefault: true,
@@ -72,7 +92,7 @@ export function Sidebar() {
                       </span>
                     </Kbd>
                     <Kbd>
-                      <span className="text-xs">\</span>
+                      <span className="text-xs">B</span>
                     </Kbd>
                   </KbdGroup>
                 </div>
@@ -82,7 +102,7 @@ export function Sidebar() {
 
           <SidebarMenuItem>
             <SidebarMenuButton
-              onClick={createChat}
+              onClick={handleCreateChat}
               tooltip="New Chat"
               className="justify-between"
               variant={'outline'}
@@ -117,26 +137,16 @@ export function Sidebar() {
         <SidebarGroup className="pt-0">
           <SidebarMenu>
             {chats.map((chat) => (
-              <SidebarMenuItem key={chat.id}>
-                <SidebarMenuButton
-                  isActive={activeChatId === chat.id}
-                  onClick={() => selectChat(chat.id)}
-                  tooltip={chat.title}
-                >
-                  <MessageSquare className="size-4" />
-                  <span className="truncate">{chat.title}</span>
-                </SidebarMenuButton>
-                <SidebarMenuAction
-                  showOnHover
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    deleteChat(chat.id);
-                  }}
-                  title="Delete Chat"
-                >
-                  <Trash2 className="size-4" />
-                </SidebarMenuAction>
-              </SidebarMenuItem>
+              <SidebarChatItem
+                key={chat.id}
+                chat={chat}
+                isActive={activeChatId === chat.id}
+                onSelect={() => selectChat(chat.id)}
+                onStartEditing={() => setEditingId(chat.id)}
+                onStopEditing={() => setEditingId(null)}
+                onRename={(newTitle) => handleRename(chat.id, newTitle)}
+                onDelete={() => handleDeleteChat(chat.id)}
+              />
             ))}
           </SidebarMenu>
           {chats.length === 0 && open && (

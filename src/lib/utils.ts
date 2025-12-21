@@ -1,9 +1,20 @@
+import { createIsomorphicFn } from '@tanstack/react-start';
+import { getCookies } from '@tanstack/react-start/server';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { parse } from 'cookie-es';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
+
+export const getIsomorphicCookies = createIsomorphicFn()
+  .server(() => {
+    return getCookies();
+  })
+  .client(() => {
+    return parse(document.cookie);
+  });
 
 export function getCookieValue(
   cookieHeader: string | null | undefined,

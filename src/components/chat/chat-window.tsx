@@ -2,12 +2,16 @@ import { useRef, useEffect } from 'react';
 import { useChatStore } from '@/store/chat-store';
 import { ChatMessage } from '@/components/chat/chat-message';
 import ChatInput, { ChatInputProps } from './input/chat-input';
+import { useChat, useCreateChat, useSendMessage } from '@/hooks/use-chat-query';
 
 export function ChatWindow() {
-  const { chats, activeChatId, addMessage, createChat } = useChatStore();
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { activeChatId, selectChat } = useChatStore();
+  const { data: activeChat } = useChat(activeChatId);
 
-  const activeChat = chats.find((c) => c.id === activeChatId);
+  const createChatMutation = useCreateChat();
+  const sendMessageMutation = useSendMessage();
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -17,20 +21,37 @@ export function ChatWindow() {
     scrollToBottom();
   }, [activeChat?.messages]);
 
-  const handleSubmit: ChatInputProps['onSubmit'] = (data) => {
-    let chatId = activeChatId;
+  const handleSubmit: ChatInputProps['onSubmit'] = async (data) => {
+    const prompt = data.value.prompt.trim();
+    if (prompt === '' && Object.keys(data.value.attachments).length === 0)
+      return;
+
     data.formApi.reset();
 
-    if (data.value.prompt.trim() === '') return;
+    let chatId = activeChatId;
+
     if (!chatId) {
-      chatId = createChat();
+      chatId = await createChatMutation.mutateAsync('New Chat');
+      selectChat(chatId);
     }
 
-    addMessage(chatId, data.value.prompt, 'user');
+    // Convert Record<string, File> to File[]
+    const attachments = Object.values(data.value.attachments);
+
+    await sendMessageMutation.mutateAsync({
+      chatId,
+      content: prompt,
+      role: 'user',
+      attachments,
+    });
 
     // Simulate bot response
     setTimeout(() => {
-      addMessage(chatId, 'This is a simulated response.', 'assistant');
+      sendMessageMutation.mutate({
+        chatId: chatId!,
+        content: 'This is a simulated response.',
+        role: 'assistant',
+      });
     }, 1000);
   };
 
@@ -39,6 +60,7 @@ export function ChatWindow() {
       <div className="flex-1 overflow-auto p-1">
         <div className="mx-auto max-w-2xl space-y-4">
           {activeChat &&
+            activeChat.messages &&
             activeChat.messages.map((message) => (
               <ChatMessage key={message.id} message={message} />
             ))}
@@ -47,7 +69,10 @@ export function ChatWindow() {
       </div>
       <div className="bg-background p-1">
         <div className="mx-auto max-w-2xl">
-          <ChatInput onSubmit={handleSubmit} />
+          <ChatInput
+            onSubmit={handleSubmit}
+            history={undefined} // Types mismatch with simple string/file arrays, leaving undefined for now
+          />
         </div>
       </div>
     </div>

@@ -7,6 +7,7 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { getPlatform } from '@/hooks/use-platform';
+import { getIsomorphicCookies } from '@/lib/utils';
 
 export const Route = createFileRoute('/')({
   component: App,
@@ -18,8 +19,10 @@ export const Route = createFileRoute('/')({
 });
 
 function App() {
+  const openCookie = getIsomorphicCookies()['sidebar_state'];
+  const defaultOpen = openCookie === 'true';
   return (
-    <SidebarProvider defaultOpen={true}>
+    <SidebarProvider defaultOpen={defaultOpen}>
       <Sidebar />
       <SidebarInset className="flex h-screen flex-col overflow-hidden">
         <header className="flex shrink-0 items-center border-b p-1 md:hidden">

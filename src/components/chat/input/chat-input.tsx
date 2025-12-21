@@ -8,6 +8,7 @@ import { Kbd, KbdGroup } from '@/components/ui/kbd';
 import { cn } from '@/lib/utils';
 import z from 'zod';
 import { Paperclip } from 'lucide-react';
+import { usePrefersDark } from '@/lib/use-prefers-color-scheme';
 
 export const chatInputSchema = z.object({
   prompt: z.string(),
@@ -20,7 +21,8 @@ export const chatInputSchema = z.object({
 export type ChatInputType = z.infer<typeof chatInputSchema>;
 
 export interface ChatInputProps {
-  onSubmit: (props: { value: ChatInputType; formApi: AnyFormApi }) => void;
+  onSubmit?: (props: { value: ChatInputType; formApi: AnyFormApi }) => void;
+  history?: ChatInputType[];
 }
 
 export default function ChatInput(props: ChatInputProps) {
@@ -109,6 +111,8 @@ export default function ChatInput(props: ChatInputProps) {
     }
   );
 
+  const prefersDark = usePrefersDark();
+
   return (
     <form
       onSubmit={(e) => {
@@ -120,7 +124,7 @@ export default function ChatInput(props: ChatInputProps) {
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       className={cn(
-        'relative flex w-full max-w-4xl flex-col border border-input bg-transparent text-base outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-1 focus-within:outline-none',
+        'relative flex w-full max-w-4xl flex-col border border-input bg-transparent text-base ring-offset-background outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-1 focus-within:outline-none',
         isDragging && 'border-primary ring-2 ring-primary ring-offset-2'
       )}
     >
@@ -203,7 +207,7 @@ export default function ChatInput(props: ChatInputProps) {
         <Button ref={submitButtonRef} type="submit" className="gap-2">
           send
           {!isMobile && (
-            <KbdGroup className="dark">
+            <KbdGroup className={prefersDark ? 'light' : 'dark'}>
               <Kbd>{isMac ? '⌘' : 'ctrl'}</Kbd>
               <Kbd>⏎</Kbd>
             </KbdGroup>

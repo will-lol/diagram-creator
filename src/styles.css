@@ -3,9 +3,10 @@
 @import 'shadcn/tailwind.css';
 @import '@fontsource-variable/jetbrains-mono';
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:is(.dark *):not(:is(.light *)));
 
-:root {
+:root,
+.light {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -130,18 +131,18 @@
 
 @layer codemirror {
   .cm-editor.cm-focused {
-    @apply !outline-none;
+    @apply outline-none!;
   }
   .cm-editor .cm-content {
-    @apply !p-0 font-mono text-sm;
+    @apply p-0! font-mono text-sm;
   }
   .cm-editor .cm-scroller {
-    @apply px-3 py-2;
+    @apply overflow-auto px-3 py-2;
   }
   .cm-editor .cm-content .cm-line .cm-placeholder {
     @apply text-muted-foreground!;
   }
   .cm-editor .cm-content .cm-line {
-    @apply !p-0;
+    @apply p-0!;
   }
 }

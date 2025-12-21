@@ -42,6 +42,7 @@ import {
   selectSyntaxLeft,
   selectSyntaxRight,
   simplifySelection,
+  standardKeymap,
   toggleBlockComment,
   toggleComment,
   toggleTabFocusMode,
@@ -51,47 +52,55 @@ import {
   closeBrackets,
   closeBracketsKeymap,
 } from '@/lib/close-brackets-codemirror';
+import { githubLight, githubDark } from '@uiw/codemirror-theme-github';
 import { useCallback, useEffect, useRef, type Ref } from 'react';
+import { usePrefersDark } from '@/lib/use-prefers-color-scheme';
 
-const defaultKeymap: readonly KeyBinding[] = [
-  {
-    key: 'Alt-ArrowLeft',
-    mac: 'Ctrl-ArrowLeft',
-    run: cursorSyntaxLeft,
-    shift: selectSyntaxLeft,
-  },
-  {
-    key: 'Alt-ArrowRight',
-    mac: 'Ctrl-ArrowRight',
-    run: cursorSyntaxRight,
-    shift: selectSyntaxRight,
-  },
+const defaultKeymap = (
+  [
+    {
+      key: 'Alt-ArrowLeft',
+      mac: 'Ctrl-ArrowLeft',
+      run: cursorSyntaxLeft,
+      shift: selectSyntaxLeft,
+    },
+    {
+      key: 'Alt-ArrowRight',
+      mac: 'Ctrl-ArrowRight',
+      run: cursorSyntaxRight,
+      shift: selectSyntaxRight,
+    },
 
-  { key: 'Alt-ArrowUp', run: moveLineUp },
-  { key: 'Shift-Alt-ArrowUp', run: copyLineUp },
+    { key: 'Alt-ArrowUp', run: moveLineUp },
+    { key: 'Shift-Alt-ArrowUp', run: copyLineUp },
 
-  { key: 'Alt-ArrowDown', run: moveLineDown },
-  { key: 'Shift-Alt-ArrowDown', run: copyLineDown },
+    { key: 'Alt-ArrowDown', run: moveLineDown },
+    { key: 'Shift-Alt-ArrowDown', run: copyLineDown },
 
-  { key: 'Mod-Alt-ArrowUp', run: addCursorAbove },
-  { key: 'Mod-Alt-ArrowDown', run: addCursorBelow },
+    { key: 'Mod-Alt-ArrowUp', run: addCursorAbove },
+    { key: 'Mod-Alt-ArrowDown', run: addCursorBelow },
 
-  { key: 'Escape', run: simplifySelection },
+    { key: 'Escape', run: simplifySelection },
 
-  { key: 'Alt-l', mac: 'Ctrl-l', run: selectLine },
-  { key: 'Mod-i', run: selectParentSyntax, preventDefault: true },
+    { key: 'Alt-l', mac: 'Ctrl-l', run: selectLine },
+    { key: 'Mod-i', run: selectParentSyntax, preventDefault: true },
 
-  { key: 'Mod-[', run: indentLess },
-  { key: 'Mod-]', run: indentMore },
-  { key: 'Mod-Alt-\\', run: indentSelection },
-  { key: 'Shift-Mod-k', run: deleteLine },
-  { key: 'Shift-Mod-\\', run: cursorMatchingBracket },
+    { key: 'Mod-[', run: indentLess },
+    { key: 'Mod-]', run: indentMore },
+    { key: 'Mod-Alt-\\', run: indentSelection },
+    { key: 'Shift-Mod-k', run: deleteLine },
+    { key: 'Shift-Mod-\\', run: cursorMatchingBracket },
 
-  { key: 'Mod-/', run: toggleComment },
-  { key: 'Alt-A', run: toggleBlockComment },
+    { key: 'Mod-/', run: toggleComment },
+    { key: 'Alt-A', run: toggleBlockComment },
 
-  { key: 'Ctrl-m', mac: 'Shift-Alt-m', run: toggleTabFocusMode },
-];
+    {
+      key: 'Ctrl-m',
+      mac: 'Shift-Alt-m',
+      run: toggleTabFocusMode,
+    },
+  ] as readonly KeyBinding[]
+).concat(standardKeymap);
 
 export interface CodeMirrorMarkdownProps extends Omit<
   ReactCodeMirrorProps,
@@ -194,6 +203,8 @@ const CodeMirrorMarkdown = ({
     });
   }, [props.value]);
 
+  const prefersDark = usePrefersDark();
+
   return (
     <CodeMirror
       {...props}
@@ -202,11 +213,10 @@ const CodeMirrorMarkdown = ({
         if (typeof ref === 'function') {
           ref(current);
         } else if (ref) {
-          // @ts-ignore
           ref.current = current;
         }
       }}
-      theme={'none'}
+      theme={prefersDark ? githubDark : githubLight}
       basicSetup={false}
       indentWithTab={false}
       extensions={[
@@ -217,9 +227,9 @@ const CodeMirrorMarkdown = ({
         history(),
         drawSelection(),
         syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
+        markdown(),
         bracketMatching(),
         closeBrackets(),
-        markdown(),
         EditorView.lineWrapping,
         markdownLanguage.data.of({
           closeBrackets: {
@@ -233,14 +243,11 @@ const CodeMirrorMarkdown = ({
           autocapitalize: 'sentences',
           writingsuggestions: 'true',
         }),
-        EditorView.theme({
-          '.cm-scroller': { overflow: 'auto' },
-        }),
         keymap.of([
-          ...markdownKeymap,
           ...defaultKeymap,
           ...historyKeymap,
           ...closeBracketsKeymap,
+          ...markdownKeymap,
         ]),
       ]}
     />
