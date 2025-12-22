@@ -34,8 +34,6 @@ export function Sidebar() {
   const platform = usePlatform();
   const isMac = platform === 'macos';
 
-  const [editingId, setEditingId] = useState<string | null>(null);
-
   const handleCreateChat = async () => {
     const newChatId = await createChatMutation.mutateAsync('New Chat');
     selectChat(newChatId);
@@ -142,8 +140,6 @@ export function Sidebar() {
                 chat={chat}
                 isActive={activeChatId === chat.id}
                 onSelect={() => selectChat(chat.id)}
-                onStartEditing={() => setEditingId(chat.id)}
-                onStopEditing={() => setEditingId(null)}
                 onRename={(newTitle) => handleRename(chat.id, newTitle)}
                 onDelete={() => handleDeleteChat(chat.id)}
               />

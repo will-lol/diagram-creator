@@ -1,15 +1,55 @@
-node_modules
-package-lock.json
+# System Files
 .DS_Store
-.direnv
+Thumbs.db
+.AppleDouble
+.LSOverride
+
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Build & Output
 dist
 dist-ssr
-*.local
-count.txt
-.env
+build
+out
+.output
+.vinxi
 .nitro
 .tanstack
 .wrangler
-.output
-.vinxi
+
+# Environment & Secrets
+.env
+.env.*
+!.env.example
+.direnv
+*.local
+
+# Editor / IDE
+.idea
+.vscode
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+*.sublime-workspace
+*.swp
+*.swo
+
+# Testing
+coverage
+
+# Misc
+count.txt
 todos.json
+package-lock.json

@@ -49,6 +49,7 @@
               self.formatter.${system}
               nodejs
               bun
+              typst
             ];
 
             # Set any environment variables for your development environment

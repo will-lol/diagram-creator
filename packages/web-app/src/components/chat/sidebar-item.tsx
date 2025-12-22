@@ -10,21 +10,21 @@ import { DBChat } from '@/lib/db';
 interface SidebarChatItemProps {
   chat: DBChat;
   isActive: boolean;
-  onSelect: () => void;
-  onStartEditing: () => void;
-  onStopEditing: () => void;
-  onRename: (newTitle: string) => void;
-  onDelete: () => void;
+  onSelect?: () => void;
+  onStartEditing?: () => void;
+  onStopEditing?: () => void;
+  onRename?: (newTitle: string) => void;
+  onDelete?: () => void;
 }
 
 export function SidebarChatItem({
   chat,
   isActive,
-  onSelect,
-  onStartEditing,
-  onStopEditing,
-  onRename,
-  onDelete,
+  onSelect = () => {},
+  onStartEditing = () => {},
+  onStopEditing = () => {},
+  onRename = () => {},
+  onDelete = () => {},
 }: SidebarChatItemProps) {
   const [editTitle, setEditTitle] = useState(chat.title);
   const [isEditing, setIsEditing] = useState(false);
