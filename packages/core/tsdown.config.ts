@@ -6,10 +6,10 @@ type GetContentsResponse = Endpoints["GET /repos/{owner}/{repo}/contents/{path}"
 const cetzPlugin = {
   name: "cetz-versions",
   resolveId(id: string) {
-    if (id === "cetz-versions") return "\0cetz-versions";
+    if (id === "virtual:cetz-versions") return "\0virtual:cetz-versions";
   },
   async load(id: string) {
-    if (id === "\0cetz-versions") {
+    if (id === "\0virtual:cetz-versions") {
       const fetchVersion = async (pkg: string) => {
         try {
           const res = await fetch(`https://api.github.com/repos/typst/packages/contents/packages/preview/${pkg}`);

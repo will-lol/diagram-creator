@@ -2,7 +2,7 @@ import { z } from "zod";
 import { streamText, tool, type LanguageModel, ModelMessage, TextPart, FilePart, ImagePart } from "ai";
 import type { SessionUpdate, ToolCallUpdate, Plan } from "./protocol";
 import { ContentBlock, EmbeddedResourceResource } from "@agentclientprotocol/sdk";
-import { CETZ_VERSION, CETZ_PLOT_VERSION } from "cetz-versions";
+import { CETZ_VERSION, CETZ_PLOT_VERSION } from "virtual:cetz-versions";
 
 export const VERSIONS = {
   cetz: CETZ_VERSION,
