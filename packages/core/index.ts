@@ -1,56 +1,13 @@
-import { z } from "zod";
-import { streamText, tool, type LanguageModel, ModelMessage, TextPart, FilePart, ImagePart } from "ai";
-import type { SessionUpdate, ToolCallUpdate, Plan } from "./protocol";
-import { ContentBlock, EmbeddedResourceResource } from "@agentclientprotocol/sdk";
+import { ToolLoopAgent, stepCountIs, type LanguageModel, type ModelMessage } from "ai";
 import { CETZ_VERSION, CETZ_PLOT_VERSION } from "virtual:cetz-versions";
+import { MCPClient } from "@ai-sdk/mcp";
 
 export const VERSIONS = {
   cetz: CETZ_VERSION,
   cetzPlot: CETZ_PLOT_VERSION,
 };
 
-// Re-export protocol types
-export * from "./protocol";
-
-// --- Tools ---
-
-export const agentTools = {
-  weather: z.object({
-    location: z.string().describe("The location to get weather for"),
-  }),
-};
-
-// --- Agent Execution Types ---
-
-export type AgentInput = {
-  messages: ModelMessage[];
-};
-
-export type AgentConfig = {
-  model: LanguageModel;
-  systemPrompt?: string;
-  tools?: Record<string, any>;
-};
-
-/**
- * Interface for receiving updates from the agent
- */
-export interface AgentCallbacks {
-  onUpdate: (update: SessionUpdate) => void;
-}
-
-async function getWeather(input: { location: string }) {
-  return `Weather in ${input.location} is sunny`;
-}
-
-/**
- * Runs the agent with streaming support, emitting ACP-compatible updates.
- * Implements a manual loop to handle multi-step execution with full protocol visibility.
- */
-export async function runAgentStreaming(input: ModelMessage[], model: LanguageModel, onUpdate?: (update: SessionUpdate) => void) {
-  const messages = [...input];
-
-  const system_prompt = `# Role & Objective
+const SYSTEM_PROMPT = `# Role & Objective
   You are the **CeTZ Diagram Architect**, a specialized code generator for the Typst typesetting system. Your goal is to convert natural language or image inputs into error-free, compilable \`cetz\` visualization code.
 
   # Critical Workflow
@@ -104,164 +61,16 @@ export async function runAgentStreaming(input: ModelMessage[], model: LanguageMo
   2. **Failure Handling:** If 3 verification attempts fail, you may break silence to explain the limitation.
   3. **No Hallucinations:** Use \`searchCetzExamples\` to verify capabilities rather than guessing.`;
 
-  while (true) {
-    const result = streamText({
-      model,
-      messages,
-      system: system_prompt,
-      tools: {
-        renderAndVerify: tool(),
-        searchCetzExamples: tool(),
-      },
-    });
+/**
+ * Creates a configured ToolLoopAgent
+ */
+export async function createAgent(model: LanguageModel, mcp: MCPClient) {
+  const tools = await mcp.tools();
 
-    // Stream the response (only necessary for providing updates to the user)
-    for await (const chunk of result.fullStream) {
-      if (chunk.type === "text-delta") {
-        process.stdout.write(chunk.text);
-      }
-
-      if (chunk.type === "tool-call") {
-        console.log("\\nCalling tool:", chunk.toolName);
-      }
-    }
-
-    // Add LLM generated messages to the message history
-    const responseMessages = (await result.response).messages;
-    messages.push(...responseMessages);
-
-    const finishReason = await result.finishReason;
-
-    if (finishReason === "tool-calls") {
-      const toolCalls = await result.toolCalls;
-
-      // Handle all tool call execution here
-      for (const toolCall of toolCalls) {
-        if (toolCall.toolName === "getWeather") {
-          const toolOutput = await getWeather(toolCall.input as any);
-          messages.push({
-            role: "tool",
-            content: [
-              {
-                toolName: toolCall.toolName,
-                toolCallId: toolCall.toolCallId,
-                type: "tool-result",
-                output: { type: "text", value: toolOutput }, // update depending on the tool's output format
-              },
-            ],
-          });
-        }
-        // Handle other tool calls
-      }
-    } else {
-      // Exit the loop when the model doesn't request to use any more tools
-      console.log("\\n\\nFinal message history:");
-      console.dir(messages, { depth: null });
-      break;
-    }
-  }
-  // const tools = config.tools || {};
-  // let currentMessages: CoreMessage[] = [...input.messages];
-  // const maxSteps = 10;
-  // let stepCount = 0;
-  // while (stepCount < maxSteps) {
-  //   stepCount++;
-  //   const stream = streamText({
-  //     model: config.model,
-  //     system: config.systemPrompt,
-  //     messages: currentMessages,
-  //     tools: tools,
-  //   });
-  //   let fullText = "";
-  //   const toolCalls: any[] = [];
-  //   for await (const part of stream.fullStream) {
-  //     switch (part.type) {
-  //         case 'text-delta':
-  //             // @ts-ignore
-  //             fullText += part.textDelta;
-  //             callbacks?.onUpdate({
-  //                 sessionUpdate: "agent_message_chunk",
-  //                 content: {
-  //                     type: "text",
-  //                     // @ts-ignore
-  //                     text: part.textDelta
-  //                 }
-  //             });
-  //             break;
-  //         case 'tool-call':
-  //             toolCalls.push(part);
-  //             callbacks?.onUpdate({
-  //                 sessionUpdate: "tool_call",
-  //                 toolCallId: part.toolCallId,
-  //                 title: `Calling tool: ${part.toolName}`,
-  //                 kind: "execute",
-  //                 status: "pending"
-  //             });
-  //             break;
-  //         case 'error':
-  //             console.error("Stream error:", part.error);
-  //             break;
-  //     }
-  //   }
-  //   // Append the assistant's response (text and tool calls) to history
-  //   // We construct the CoreMessage content array manually to match AI SDK's expectations
-  //   const assistantContent: any[] = [];
-  //   if (fullText) {
-  //       assistantContent.push({ type: "text", text: fullText });
-  //   }
-  //   for (const tc of toolCalls) {
-  //       assistantContent.push({
-  //           type: "tool-call",
-  //           toolCallId: tc.toolCallId,
-  //           toolName: tc.toolName,
-  //           args: tc.args
-  //       });
-  //   }
-  //   currentMessages.push({
-  //       role: 'assistant',
-  //       content: assistantContent
-  //   });
-  //   // If no tool calls, we are done
-  //   if (toolCalls.length === 0) {
-  //       break;
-  //   }
-  //   // Execute tools manually
-  //   const toolResults = await Promise.all(toolCalls.map(async (tc) => {
-  //       let result: any;
-  //       try {
-  //           const tool = tools[tc.toolName];
-  //           if (tool && tool.execute) {
-  //               result = await tool.execute(tc.args);
-  //           } else {
-  //               result = { error: `Tool ${tc.toolName} not found` };
-  //           }
-  //       } catch (error: any) {
-  //           result = { error: error.message };
-  //       }
-  //       // Notify completed
-  //       callbacks?.onUpdate({
-  //           sessionUpdate: "tool_call_update",
-  //           toolCallId: tc.toolCallId,
-  //           status: "completed",
-  //           content: [{
-  //               type: "content",
-  //               content: {
-  //                   type: "text",
-  //                   text: JSON.stringify(result)
-  //               }
-  //           }]
-  //       });
-  //       return {
-  //           type: "tool-result",
-  //           toolCallId: tc.toolCallId,
-  //           toolName: tc.toolName,
-  //           result: result
-  //       };
-  //   }));
-  //   currentMessages.push({
-  //       role: 'tool',
-  //       content: toolResults as any
-  //   });
-  // }
-  // return { messages: currentMessages };
+  return new ToolLoopAgent({
+    model,
+    instructions: SYSTEM_PROMPT,
+    tools,
+    stopWhen: stepCountIs(10), // Allow up to 10 steps for tool roundtrips
+  });
 }
