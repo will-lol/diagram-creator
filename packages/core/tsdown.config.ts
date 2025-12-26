@@ -1,5 +1,5 @@
 import { defineConfig } from "tsdown";
-import { Endpoints } from "@octokit/types";
+import type { Endpoints } from "@octokit/types";
 
 type GetContentsResponse = Endpoints["GET /repos/{owner}/{repo}/contents/{path}"]["response"]["data"];
 
@@ -43,7 +43,7 @@ const cetzPlugin = {
 };
 
 export default defineConfig({
-  entry: ["./index.ts"],
+  entry: ["./src/index.ts"],
   format: ["cjs", "esm"],
   clean: true,
   dts: true,
